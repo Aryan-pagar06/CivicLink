@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1058297290954",
+    "project_id": "civiclink-8ca46",
+    "storage_bucket": "civiclink-8ca46.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1058297290954:android:0c21e3739b5ee584579433",
+        "android_client_info": {
+          "package_name": "com.example.civics_link"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChf07rldWLz_qsrH1rj01sBVztsJEoXcQ"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
