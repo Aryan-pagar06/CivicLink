@@ -25,6 +25,16 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
   bool _obscurePassword = true;
   bool _locationLoading = false;
 
+  // Aadhaar input formatter to limit to 12 digits
+  void _limitAadhaarInput(String value) {
+    if (value.length > 12) {
+      _aadhaarController.text = value.substring(0, 12);
+      _aadhaarController.selection = TextSelection.fromPosition(
+        TextPosition(offset: _aadhaarController.text.length),
+      );
+    }
+  }
+
   Future<void> _getCurrentLocation() async {
     setState(() => _locationLoading = true);
     
@@ -194,15 +204,45 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                 key: _formKey,
                 child: Column(
                   children: [
-                    // Aadhaar Number
-                    _buildTextField(
+                    // Aadhaar Number with input limitation
+                    TextFormField(
                       controller: _aadhaarController,
-                      label: 'Aadhaar Number',
-                      icon: Feather.credit_card,
                       keyboardType: TextInputType.number,
+                      maxLength: 12, // Limits to 12 characters
+                      style: GoogleFonts.poppins(),
+                      decoration: InputDecoration(
+                        labelText: 'Aadhaar Number',
+                        labelStyle: GoogleFonts.poppins(color: Colors.blue.shade800),
+                        counterText: "${_aadhaarController.text.length}/12",
+                        counterStyle: GoogleFonts.poppins(
+                          color: _aadhaarController.text.length == 12 
+                              ? Colors.green 
+                              : Colors.grey,
+                          fontWeight: FontWeight.w500,
+                        ),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.blue.shade400),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.blue.shade700, width: 2),
+                        ),
+                        prefixIcon: Icon(Feather.credit_card, color: Colors.blue.shade700),
+                        suffixIcon: _aadhaarController.text.length == 12
+                            ? Icon(Feather.check_circle, color: Colors.green)
+                            : null,
+                      ),
+                      onChanged: _limitAadhaarInput,
                       validator: (value) {
-                        if (value == null || value.length != 12) {
-                          return 'Please enter valid 12-digit Aadhaar';
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your Aadhaar number';
+                        }
+                        if (value.length != 12) {
+                          return 'Aadhaar must be exactly 12 digits';
+                        }
+                        if (!RegExp(r'^[0-9]{12}$').hasMatch(value)) {
+                          return 'Aadhaar must contain only numbers';
                         }
                         return null;
                       },
@@ -230,8 +270,11 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                       icon: Feather.mail,
                       keyboardType: TextInputType.emailAddress,
                       validator: (value) {
-                        if (value == null || !value.contains('@')) {
-                          return 'Please enter valid email';
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your email';
+                        }
+                        if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                          return 'Please enter a valid email address';
                         }
                         return null;
                       },
@@ -266,7 +309,10 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         ),
                       ),
                       validator: (value) {
-                        if (value == null || value.length < 6) {
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter a password';
+                        }
+                        if (value.length < 6) {
                           return 'Password must be at least 6 characters';
                         }
                         return null;
@@ -275,14 +321,36 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                     const SizedBox(height: 16),
 
                     // Age
-                    _buildTextField(
+                    TextFormField(
                       controller: _ageController,
-                      label: 'Age',
-                      icon: Feather.calendar,
                       keyboardType: TextInputType.number,
+                      style: GoogleFonts.poppins(),
+                      decoration: InputDecoration(
+                        labelText: 'Age',
+                        labelStyle: GoogleFonts.poppins(color: Colors.blue.shade800),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.blue.shade400),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(12),
+                          borderSide: BorderSide(color: Colors.blue.shade700, width: 2),
+                        ),
+                        prefixIcon: Icon(Feather.calendar, color: Colors.blue.shade700),
+                      ),
                       validator: (value) {
-                        if (value == null || int.tryParse(value) == null) {
-                          return 'Please enter valid age';
+                        if (value == null || value.isEmpty) {
+                          return 'Please enter your age';
+                        }
+                        final age = int.tryParse(value);
+                        if (age == null) {
+                          return 'Please enter a valid number';
+                        }
+                        if (age < 18) {
+                          return 'You must be at least 18 years old';
+                        }
+                        if (age > 120) {
+                          return 'Please enter a valid age';
                         }
                         return null;
                       },
@@ -309,6 +377,7 @@ class _RegistrationScreenState extends State<RegistrationScreen> {
                         DropdownMenuItem(value: 'Male', child: Text('Male')),
                         DropdownMenuItem(value: 'Female', child: Text('Female')),
                         DropdownMenuItem(value: 'Other', child: Text('Other')),
+                        DropdownMenuItem(value: 'Prefer not to say', child: Text('Prefer not to say')),
                       ],
                       onChanged: (value) {
                         setState(() => _selectedGender = value);
