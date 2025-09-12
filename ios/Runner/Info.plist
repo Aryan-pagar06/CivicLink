@@ -45,5 +45,19 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+
+	<!-- Added permissions for camera and photo library access -->
+	<key>NSCameraUsageDescription</key>
+	<string>This app needs camera access to take photos of civic issues</string>
+	<key>NSPhotoLibraryUsageDescription</key>
+	<string>This app needs photo library access to select images of civic issues</string>
+	<key>NSMicrophoneUsageDescription</key>
+	<string>This app needs microphone access for video recording</string>
+	
+	<!-- Optional: Location permissions if you plan to use geolocation -->
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>This app needs location access to tag issues with your current location</string>
+	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
+	<string>This app needs location access to tag issues with your current location</string>
 </dict>
 </plist>

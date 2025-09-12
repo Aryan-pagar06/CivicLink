@@ -3,7 +3,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:animated_text_kit/animated_text_kit.dart';
 import 'package:flutter_vector_icons/flutter_vector_icons.dart';
 import 'aadhaar_otp_screen.dart';
-import 'registration_screen.dart';
+import 'registration_screen.dart'; // Keep only one import
+import 'citizen_home_screen.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,13 +12,14 @@ class LoginScreen extends StatefulWidget {
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
-
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
   bool _isLoading = false;
   bool _obscurePassword = true;
   bool _showAnimatedText = true;
+  String _selectedUserType = 'Citizen';
+  final List<String> _userTypes = ['Citizen', 'Admin', 'Worker'];
 
   void _navigateToAadhaarLogin() {
     Navigator.push(context, MaterialPageRoute(builder: (context) => AadhaarOtpScreen()));
@@ -31,7 +33,15 @@ class _LoginScreenState extends State<LoginScreen> {
     setState(() => _isLoading = true);
     await Future.delayed(const Duration(seconds: 2));
     setState(() => _isLoading = false);
-    print("Email login: ${_emailController.text}");
+    print("Email login: ${_emailController.text} as ${_selectedUserType}");
+    
+    // Navigate based on user type
+    if (_selectedUserType == 'Citizen') {
+      Navigator.pushReplacement(
+        context,
+        MaterialPageRoute(builder: (context) => CitizenHomeScreen()),
+      );
+    }
   }
 
   @override
@@ -72,82 +82,33 @@ class _LoginScreenState extends State<LoginScreen> {
                       )
                     ],
                   ),
-                  child: ClipOval(
-                    child: Image.asset(
-                      'assets/images/logo.png',
-                      width: 100,
-                      height: 100,
-                      fit: BoxFit.cover,
-                    ),
-                  ),
+                  child: const Icon(Icons.report_problem, size: 60, color: Colors.blue),
                 ),
               ),
               const SizedBox(height: 20),
 
-              // App Name - Will stay after animation
-              AnimatedTextKit(
-                animatedTexts: [
-                  ScaleAnimatedText(
-                    'CivicLink',
-                    textStyle: GoogleFonts.poppins(
-                      fontSize: 36,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                    duration: const Duration(milliseconds: 1000),
-                  ),
-                ],
-                isRepeatingAnimation: false,
-                totalRepeatCount: 1,
-                onFinished: () {
-                  setState(() {
-                    _showAnimatedText = false;
-                  });
-                },
-              ),
-              
-              // Persistent text after animation completes
-              if (!_showAnimatedText)
-                Text(
-                  'CivicLink',
-                  style: GoogleFonts.poppins(
-                    fontSize: 36,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
+              // App Name
+              Text(
+                'CivicLink',
+                style: GoogleFonts.poppins(
+                  fontSize: 36,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
+              ),
               
               const SizedBox(height: 10),
 
-              // Tagline - Will stay after animation
-              AnimatedTextKit(
-                animatedTexts: [
-                  FadeAnimatedText(
-                    'BE THE CHANGE IN YOUR COMMUNITY',
-                    textStyle: GoogleFonts.poppins(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.white70,
-                      letterSpacing: 1.2,
-                    ),
-                    duration: const Duration(milliseconds: 1500),
-                  ),
-                ],
-                isRepeatingAnimation: false,
-                totalRepeatCount: 1,
-              ),
-              
-              // Persistent tagline after animation completes
-              if (!_showAnimatedText)
-                Text(
-                  'BE THE CHANGE IN YOUR COMMUNITY',
-                  style: GoogleFonts.poppins(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w600,
-                    color: Colors.white70,
-                    letterSpacing: 1.2,
-                  ),
+              // Tagline
+              Text(
+                'BE THE CHANGE IN YOUR COMMUNITY',
+                style: GoogleFonts.poppins(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w600,
+                  color: Colors.white70,
+                  letterSpacing: 1.2,
                 ),
+              ),
               
               const SizedBox(height: 50),
 
@@ -167,6 +128,39 @@ class _LoginScreenState extends State<LoginScreen> {
                 ),
                 child: Column(
                   children: [
+                    // User Type Dropdown
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 12),
+                      decoration: BoxDecoration(
+                        border: Border.all(color: Colors.blue.shade400),
+                        borderRadius: BorderRadius.circular(15),
+                      ),
+                      child: DropdownButtonHideUnderline(
+                        child: DropdownButton<String>(
+                          value: _selectedUserType,
+                          isExpanded: true,
+                          icon: Icon(Feather.chevron_down, color: Colors.blue.shade700),
+                          items: _userTypes.map((String value) {
+                            return DropdownMenuItem<String>(
+                              value: value,
+                              child: Text(
+                                value,
+                                style: GoogleFonts.poppins(
+                                  color: Colors.blue.shade800,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                          onChanged: (String? newValue) {
+                            setState(() {
+                              _selectedUserType = newValue!;
+                            });
+                          },
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+
                     // Email Field
                     TextFormField(
                       controller: _emailController,
@@ -242,7 +236,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               shadowColor: Colors.blue.shade300,
                             ),
                             child: Text(
-                              'LOGIN WITH EMAIL',
+                              'LOGIN AS $_selectedUserType'.toUpperCase(),
                               style: GoogleFonts.poppins(
                                 fontSize: 16,
                                 fontWeight: FontWeight.w600,
