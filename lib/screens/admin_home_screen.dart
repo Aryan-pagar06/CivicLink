@@ -18,6 +18,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
   int _currentTab = 0;
   final FirestoreService _firestoreService = FirestoreService();
 
+  // This function now determines the department for auto-assignment.
   Department _assignToDepartment(String issueType) {
     switch (issueType.toLowerCase()) {
       case 'pothole':
@@ -45,6 +46,40 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     }
   }
 
+  // The new "AI" auto-assign logic that updates Firestore.
+  void _autoAssignWithAI() async {
+    // Show a loading indicator
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('Assigning issues using AI...')),
+    );
+
+    // Get all unassigned issues from the database
+    final issues = await FirebaseFirestore.instance
+        .collection('issues')
+        .where('assigned', isEqualTo: false) // Assuming you have an 'assigned' field
+        .get();
+
+    // Loop through each unassigned issue
+    for (var doc in issues.docs) {
+      final issueData = doc.data() as Map<String, dynamic>;
+      final issueType = issueData['category'] as String? ?? 'Unknown';
+      
+      // Determine the department using our simple logic
+      final assignedDepartment = _assignToDepartment(issueType);
+
+      // Update the document in Firestore
+      await doc.reference.update({
+        'assigned': true,
+        'assignedDepartment': assignedDepartment.displayName,
+      });
+    }
+
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('AI assignment complete!')),
+    );
+  }
+
+
   Widget _buildIssueCard(DocumentSnapshot doc) {
     final issueData = doc.data() as Map<String, dynamic>;
     final imageUrl = issueData['imageUrl'] as String?;
@@ -52,6 +87,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
     final description = issueData['description'] as String? ?? 'No description';
     final location = issueData['location'] as Map<String, dynamic>?;
     final createdAt = issueData['createdAt'] as Timestamp? ?? Timestamp.now();
+    final assignedDepartment = issueData['assignedDepartment'] as String? ?? 'Not Assigned';
     final department = _assignToDepartment(issueType);
 
     return Card(
@@ -90,6 +126,7 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
                   ),
                 ),
                 const Spacer(),
+                // You can add your buttons and menu here later if needed
               ],
             ),
             const SizedBox(height: 12),
@@ -158,6 +195,14 @@ class _AdminHomeScreenState extends State<AdminHomeScreen> {
         backgroundColor: Colors.blue.shade700,
         foregroundColor: Colors.white,
         actions: [
+          // The new "AI" button
+          TextButton(
+            onPressed: _autoAssignWithAI,
+            child: Text(
+              'Auto Assign with AI',
+              style: GoogleFonts.poppins(color: Colors.white),
+            ),
+          ),
           IconButton(
             icon: const Icon(Feather.bell),
             onPressed: () {},
